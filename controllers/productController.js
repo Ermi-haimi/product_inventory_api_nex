@@ -1,4 +1,5 @@
 import products from "../data/products.js";
+import createError from "../services/createError.js";
 function getAllProducts(req, res) {
   res.status(200).json({
     success: true,
@@ -6,15 +7,12 @@ function getAllProducts(req, res) {
   });
 }
 
-function getProductById(req, res) {
+function getProductById(req, res, next) {
   const prodId = Number(req.params.id);
   const product = products.find((product) => product.id == prodId);
 
   if (!product) {
-    res.status(404).json({
-      success: false,
-      message: "Product Not Found",
-    });
+    next(createError("Product Not Found", 400));
     return;
   }
   res.status(200).json({
@@ -23,7 +21,7 @@ function getProductById(req, res) {
   });
 }
 
-function getProductByCategory(req, res) {
+function getProductByCategory(req, res, next) {
   const category = req.params.cat;
   const categoryProducts = products.filter(
     (product) =>
@@ -31,10 +29,7 @@ function getProductByCategory(req, res) {
   );
 
   if (categoryProducts.length === 0) {
-    res.status(404).json({
-      success: false,
-      message: "No item with the category",
-    });
+    next(createError("No item with the category", 404));
     return;
   }
   res.status(200).json({
@@ -52,10 +47,8 @@ function checkNewProduct(req, res, next) {
     !Object.hasOwn(newProduct, "quantity") ||
     !Object.hasOwn(newProduct, "category")
   ) {
-    res.status(400).json({
-      success: false,
-      message: "All properties must be provided",
-    });
+    next(createError("All properties must be provided", 400));
+
     return;
   }
 
@@ -67,24 +60,18 @@ function checkNewProduct(req, res, next) {
     typeof newProduct.category !== "string" ||
     newProduct.category.trim() === ""
   ) {
-    res.status(400).json({
-      success: false,
-      message: "name and category must be non-empty strings",
-    });
+    next(createError("name and category must be non-empty strings", 400));
+
     return;
   }
   if (!Number.isInteger(quantity) || quantity < 1) {
-    res.status(400).json({
-      success: false,
-      message: "quantity must be positive integer",
-    });
+    next(createError("quantity must be positive integer", 400));
+
     return;
   }
   if (!Number.isFinite(price) || price < 0) {
-    res.status(400).json({
-      success: false,
-      message: "price must be non negative number",
-    });
+    next(createError("price must be non negative number", 400));
+
     return;
   }
   const idArray = products.map((prod) => {
@@ -108,23 +95,19 @@ function addProduct(req, res) {
   });
 }
 
-function updateProduct(req, res) {
+function updateProduct(req, res, next) {
   const productUpdate = req.body;
   const prodId = Number(req.params.id);
   let updateCount = 0;
   if (!Number.isInteger(prodId)) {
-    res.status(400).json({
-      success: false,
-      message: "invalid id",
-    });
+    next(createError("invalid id", 400));
+
     return;
   }
   const product = products.find((prod) => prod.id === prodId);
   if (!product) {
-    res.status(404).json({
-      success: false,
-      message: "Product Not Found",
-    });
+    next(createError("Product Not Found", 404));
+
     return;
   }
 
@@ -135,10 +118,8 @@ function updateProduct(req, res) {
       typeof productUpdate.name !== "string" ||
       productUpdate.name.trim() === ""
     ) {
-      res.status(400).json({
-        success: false,
-        message: "name should be non empty string",
-      });
+      next(createError("name should be non empty string", 400));
+
       return;
     }
     updates.name = productUpdate.name.trim();
@@ -149,10 +130,8 @@ function updateProduct(req, res) {
       typeof productUpdate.category !== "string" ||
       productUpdate.category.trim() === ""
     ) {
-      res.status(400).json({
-        success: false,
-        message: "category should be non empty string",
-      });
+      next(createError("category should be non empty string", 400));
+
       return;
     }
     updates.category = productUpdate.category.trim();
@@ -162,10 +141,8 @@ function updateProduct(req, res) {
   if (Object.hasOwn(productUpdate, "price")) {
     const price = Number(productUpdate.price);
     if (!Number.isFinite(price) || price < 0) {
-      res.status(400).json({
-        success: false,
-        message: "price must be non negative integer",
-      });
+      next(createError("price must be non negative integer", 400));
+
       return;
     }
 
@@ -175,10 +152,8 @@ function updateProduct(req, res) {
   if (Object.hasOwn(productUpdate, "quantity")) {
     const quantity = Number(productUpdate.quantity);
     if (!Number.isInteger(quantity) || quantity < 0) {
-      res.status(400).json({
-        success: false,
-        message: "quantity must be non negative integer",
-      });
+      next(createError("quantity must be non negative integer", 400));
+
       return;
     }
 
@@ -187,10 +162,8 @@ function updateProduct(req, res) {
   }
 
   if (updateCount === 0) {
-    res.status(400).json({
-      success: false,
-      message: "all fields are empty",
-    });
+    next(createError("all fields are empty", 400));
+
     return;
   }
 
@@ -201,14 +174,12 @@ function updateProduct(req, res) {
   });
 }
 
-function deleteProduct(req, res) {
+function deleteProduct(req, res, next) {
   const prodId = Number(req.params.id);
 
   if (!Number.isInteger(prodId)) {
-    res.status(400).json({
-      success: true,
-      message: "Invalid Id",
-    });
+    next(createError("Invalid Id", 400));
+
     return;
   }
 
@@ -221,10 +192,7 @@ function deleteProduct(req, res) {
     });
     return;
   }
-  res.status(404).json({
-    success: false,
-    message: "product is not found",
-  });
+  next(createError("product not found", 404));
 }
 export {
   getAllProducts,
