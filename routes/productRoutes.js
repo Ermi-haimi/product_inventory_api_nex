@@ -115,4 +115,97 @@ router.post(
   },
 );
 
+router.patch("/:id", (req, res) => {
+  const productUpdate = req.body;
+  const prodId = Number(req.params.id);
+  let updateCount = 0;
+  if (!Number.isInteger(prodId)) {
+    res.status(400).json({
+      success: false,
+      message: "invalid id",
+    });
+    return;
+  }
+  const product = products.find((prod) => prod.id === prodId);
+  if (!product) {
+    res.status(404).json({
+      success: false,
+      message: "Product Not Found",
+    });
+    return;
+  }
+
+  let updates = {};
+
+  if (Object.hasOwn(productUpdate, "name")) {
+    if (
+      typeof productUpdate.name !== "string" ||
+      productUpdate.name.trim() === ""
+    ) {
+      res.status(400).json({
+        success: false,
+        message: "name should be non empty string",
+      });
+      return;
+    }
+    updates.name = productUpdate.name.trim();
+    updateCount++;
+  }
+  if (Object.hasOwn(productUpdate, "category")) {
+    if (
+      typeof productUpdate.category !== "string" ||
+      productUpdate.category.trim() === ""
+    ) {
+      res.status(400).json({
+        success: false,
+        message: "category should be non empty string",
+      });
+      return;
+    }
+    updates.category = productUpdate.category.trim();
+    updateCount++;
+  }
+
+  if (Object.hasOwn(productUpdate, "price")) {
+    const price = Number(productUpdate.price);
+    if (!Number.isFinite(price) || price < 0) {
+      res.status(400).json({
+        success: false,
+        message: "price must be non negative integer",
+      });
+      return;
+    }
+
+    updates.price = price;
+    updateCount++;
+  }
+  if (Object.hasOwn(productUpdate, "quantity")) {
+    const quantity = Number(productUpdate.quantity);
+    if (!Number.isInteger(quantity) || quantity < 0) {
+      res.status(400).json({
+        success: false,
+        message: "quantity must be non negative integer",
+      });
+      return;
+    }
+
+    updates.quantity = quantity;
+    updateCount++;
+  }
+
+  if (updateCount === 0) {
+    res.status(400).json({
+      success: false,
+      message: "all fields are empty",
+    });
+    return;
+  }
+
+  Object.assign(product, updates);
+  res.status(200).json({
+    success: true,
+    data: product,
+  });
+});
+
 export default router;
