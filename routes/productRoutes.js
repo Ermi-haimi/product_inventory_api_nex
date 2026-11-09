@@ -4,6 +4,7 @@ import {
   checkNewProduct,
   deleteProduct,
   getAllProducts,
+  getLowStock,
   getProductByCategory,
   getProductById,
   updateProduct,
@@ -16,6 +17,10 @@ router.get("/", getAllProducts);
 router.get("/:id", getProductById);
 
 router.get("/category/:cat", getProductByCategory);
+
+router.get("/price/:priceVal", getProductByCategory);
+
+router.get("/low-stock", getLowStock);
 
 router.post("/", checkNewProduct, addProduct);
 

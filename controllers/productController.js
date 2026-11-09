@@ -37,6 +37,29 @@ function getProductByCategory(req, res, next) {
     data: categoryProducts,
   });
 }
+
+function getByPrice(req, res, next) {
+  let price = Number(req.params.priceVal);
+  if (!Number.isInteger(price) || price < 0) {
+    next(createError("price must be a postive integer"));
+    return;
+  }
+
+  const priceProducts = products.filter((prod) => prod.price <= price);
+  res.status(200).json({
+    success: true,
+    data: priceProducts,
+  });
+}
+
+function getLowStock(req, res) {
+  const lowStockProducts = products.filter((prod) => prod.quantity < 5);
+  res.status(200).json({
+    success: true,
+    data: lowStockProducts,
+  });
+}
+
 function checkNewProduct(req, res, next) {
   const newProduct = req.body;
   console.log(newProduct);
@@ -202,4 +225,6 @@ export {
   addProduct,
   updateProduct,
   deleteProduct,
+  getByPrice,
+  getLowStock,
 };
